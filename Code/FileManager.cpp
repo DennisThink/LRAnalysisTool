@@ -13,12 +13,14 @@
 ************************************************************************/
 
 #pragma warning(disable:4786)
-#include <afx.h>
 #include <iostream>
-#include <windows.h>
+//#include <windows.h>
+#include <fstream>
+#include <string.h>
 #include "FileManager.h"
 #include "FormularSet.h"
 #include "LabelSet.h"
+#include <unistd.h>
 using namespace std;
 
 
@@ -38,34 +40,30 @@ CFileManager::~CFileManager()
  */
 FormularSet CFileManager::ReadFormularSet()
 {
-	CStdioFile file;
-	char fileName[50];
+	FormularSet frSet;
+	
+	std::string strFileName;
 	cout<<endl;
 	cout<<"\t请输入存储推导式的文件名:";
-	cin>>fileName;
-	FormularSet frSet;
-	if (file.Open(fileName, CStdioFile::modeRead))
+	cin>>strFileName;
+	ifstream file;
+	file.open(strFileName);
+	if(file)
 	{
 		cout<<"\t打开文件成功，开始读取......"<<endl;
-		char buffer[100];
-		while (file.ReadString(buffer, 100))
+		char buffer[100]={0};
+		while (file.getline(buffer, 100))
 		{
-			if (NULL != buffer)
-			{
-				Formular formular(buffer);
-				frSet.AddFormular(formular);
-			}
-			for(int i = 0 ; i < 100 ; i++)
-			{
-				buffer[i]=0;
-			}
+			Formular formular(buffer);
+			frSet.AddFormular(formular);
+			memset(buffer,0,100);
 		}
-		file.Close();
+		file.close();
 		cout<<"\t";
 		for (int i = 0 ; i < 62 ; i++)
 		{
 			cout<<"*";
-			Sleep(50);
+			usleep(50);
 		}
 		cout<<endl<<"\t文件读取完成!"<<endl<<endl;
 	} 
@@ -73,7 +71,9 @@ FormularSet CFileManager::ReadFormularSet()
 	{
 		cout<<"\t对不起，程序无法读取文件"<<endl<<endl;
 	}
+	
 	return frSet;
+
 }
 
 /* 
@@ -83,7 +83,36 @@ FormularSet CFileManager::ReadFormularSet()
 LabelSet CFileManager::ReadLabelSet(const char* fileName)
 {
 	LabelSet result;
-	CStdioFile file;
+	
+	ifstream file;
+	file.open(fileName);
+	if(file)
+	{
+		cout<<"\t打开文件成功，开始读取..."<<endl;
+		char buffer[100]={0};
+		string str;
+		while (file.getline(buffer, 100))
+		{
+			str += buffer[0];
+		}
+		result.ReadLabelSet(str.c_str(),str.length());
+		file.close();
+
+		cout<<"\t";
+		for (int i = 0 ; i < 62 ; i++)
+		{
+			cout<<"*";
+			usleep(50);
+		}
+		cout<<endl<<"\t文件读取完成!"<<endl<<endl;
+	}
+	else
+	{
+		cout <<"\t 对不起，程序无法打开文件" << endl<<endl;
+	}
+	return result;
+	
+	/*CStdioFile file;
 	if (file.Open(fileName, CFile::modeRead))
 	{
 		cout<<"\t打开文件成功，开始读取..."<<endl;
@@ -108,73 +137,81 @@ LabelSet CFileManager::ReadLabelSet(const char* fileName)
 	{
 		cout <<"\t 对不起，程序无法打开文件" << endl<<endl;
 	}
-	return result;
+	return result;*/
 }
 
 bool CFileManager::WriteItemSet(ItemSet itemSet)
 {
+	return false;
 	char fileName[50];
-	CStdioFile file;
+	ofstream file;
 	int choice = 0;
 	cout<<"\t请输入保存项目集文件的名字:";
 	cin>>fileName;
-	while (file.Open(fileName,CStdioFile::modeRead))
+	file.open(fileName);
+	while (!file)
 	{
-		file.Close();
+		file.close();
 		cout<<"\t请输入保存项目集文件的名字:";
 		cin>>fileName;
+		file.open(fileName);
 	}
 	string fileStr(fileName);
 	if (fileStr.find_first_of(".txt",0) > fileStr.length())
 	{
 		fileStr.append(".txt");
 	}
-	file.Open(fileStr.c_str(),CStdioFile::modeCreate|CStdioFile::modeWrite);
-	file.WriteString("这是保存项目集的文件\n\r");
+	file.open(fileStr.c_str());
+	std::string strHead = "这是保存项目集的文件\n\r";
+	file.write(strHead.c_str(),strHead.length());
 	cout<<"\t开始保存项目集到文件:"<<endl;
 	cout<<"\t";
 	for (int j = 0 ; j < 62 ; j++)
 	{
 		cout<<"*";
-		Sleep(50);
+		usleep(50);
 	}
 	cout<<endl;
 	for(int i = 0 ; i < itemSet.GetItemCount() ; i++)
 	{
 		string str  = itemSet.GetItem(i).ToString();
 		str +="\n\r";
-		file.WriteString(str.c_str());
+		file.write(str.c_str(),str.length());
 	}
 	cout<<"\t项目集保存成功"<<endl;
-	file.Close();
+	file.close();
 	return true;
 }
 
 void CFileManager::WriteItemSetVector(ItemSetVector itemSetVector)
 {
 	char fileName[50];
-	CStdioFile file;
+	ifstream file;
 	cout<<endl;
 	cout<<"\t请输入保存Closure文件的名字:";
 	cin>>fileName;
-	while (file.Open(fileName,CFile::modeRead))
+	file.open(fileName);
+	while (file)
 	{
 		cout<<"\t请输入保存Closure文件的名字:";
 		cin>>fileName;
+		file.open(fileName);
 	}
 	string fileStr(fileName);
 	if (fileStr.find_first_of(".txt",0) > fileStr.length())
 	{
 		fileStr.append(".txt");
 	}
-	file.Open(fileStr.c_str(),CFile::modeCreate|CFile::modeWrite);
-	file.WriteString("这是保存Closure集的文件\n\r");
+	ofstream ofile;
+	ofile.open(fileStr);
+	std::string strHead = "这是保存Closure集的文件\n\r";
+	ofile.write(strHead.c_str(),strHead.length());
 	cout<<"\t开始保存CLOSURE集到文件:"<<endl;
 	cout<<"\t";
 	for (int j = 0 ; j < 62 ; j++)
 	{
 		cout<<"*";
-		Sleep(50);
+		usleep(50);
 	}
 	cout<<endl;
 	for (int i = 0 ; i < itemSetVector.GetItemSetCount() ; i++)
@@ -184,15 +221,16 @@ void CFileManager::WriteItemSetVector(ItemSetVector itemSetVector)
 		iSetStr += 'I';
 		iSetStr += char('0'+iset.GetId());
 		iSetStr += "\n\r";
-		file.WriteString(iSetStr.c_str());
+		ofile.write(iSetStr.c_str(),iSetStr.length());
 		for (int j = 0 ; j < iset.GetItemCount() ; j++)
 		{
 			string str = iset.GetItem(j).ToString();
 			str +="\n\r";
-			file.WriteString(str.c_str());
+			ofile.write(str.c_str(),str.length());
 		}
-		file.WriteString("\n\r");
+		ofile.write("\n\r",2);
 	}
-	file.Close();
+	ofile.close();
 	cout<<"\t保存CLOSURE集成功"<<endl;
+	return ;
 }

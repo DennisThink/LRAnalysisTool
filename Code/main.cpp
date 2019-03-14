@@ -1,6 +1,5 @@
 #pragma warning(disable:4786)
 #pragma warning(disable:4089)
-#include <afx.h>
 #include <iostream>
 #include "Manager.h"
 using namespace std;

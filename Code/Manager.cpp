@@ -13,7 +13,7 @@
 ************************************************************************/
 #pragma warning(disable:4786)
 #include "Manager.h"
-#include <conio.h>
+//#include <conio.h>
 #include <iostream>
 using namespace std;
 
@@ -34,7 +34,7 @@ void Manager::Action()
 			stack.Push(elem);
 			curChar = sourceCode.GetCurrentChar();
 			curDirect = ChangeDirection();
-
+			std::cout<<"移进"<<std::endl;
 		}
 		break;
 	case REDUCE:
@@ -49,6 +49,7 @@ void Manager::Action()
 			elem.state = curState;
 			stack.Push(elem);
 			curDirect = ChangeDirection();
+			std::cout<<"归约"<<std::endl;
 			
 		}break;
 	case SUCCEED:
@@ -430,6 +431,6 @@ void Manager::QuitProgram()
 void Manager::PressAnyKeyToReturn()
 {
 	cout<<"\t请按任意键返回:";
-	_getch();
+	getchar();
 	cout<<endl<<endl;
 }

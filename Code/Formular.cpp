@@ -13,7 +13,7 @@
 ************************************************************************/
 #include "Formular.h"
 #include <stdlib.h>
-
+#include <string.h>
 /* 构造函数 */
 Formular::Formular()
 {
